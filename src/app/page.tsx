@@ -1,23 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Image from "next/image"
 import { products } from "../components/products"
-
-interface Product {
-  id: number;
-  title: string;
-  description: string;
-  price: number;
-  image: string;
-  category: string;
-}
 import { loadFavorites, saveFavorites } from "./storage/localStorage"
 
 export default function ProductsPage() {
   const [favorites, setFavorites] = useState<number[]>([])
   const [expandedDesc, setExpandedDesc] = useState<number | null>(null)
-  const [activeProduct, setActiveProduct] = useState<Product | null>(null)
+  const [activeProduct, setActiveProduct] = useState<any | null>(null)
 
   useEffect(() => {
     setFavorites(loadFavorites())
@@ -42,7 +32,7 @@ export default function ProductsPage() {
 
   const favoriteItems = products.filter(p => favorites.includes(p.id))
 
-  const ProductCard = ({ product }: { product: Product }) => {
+  const ProductCard = ({ product }: { product: any }) => {
     const isFav = favorites.includes(product.id)
     const isExpanded = expandedDesc === product.id
 
@@ -51,7 +41,7 @@ export default function ProductsPage() {
         className="bg-white rounded-xl shadow-md hover:shadow-lg p-4 flex flex-col cursor-pointer transition-all"
         onClick={() => setActiveProduct(product)}
       >
-        <Image src={product.image} alt={product.title} width={176} height={176} className="h-44 object-contain mb-3 w-full" />
+        <img src={product.image} alt={product.title} className="h-44 object-contain mb-3 w-full" />
         <h3 className="font-medium text-lg mb-1 line-clamp-2">{product.title}</h3>
         <p className="text-sm text-gray-600 mb-1">
           {isExpanded ? product.description : product.description.slice(0, 80) + (product.description.length > 80 ? "..." : "")}
@@ -108,7 +98,7 @@ export default function ProductsPage() {
             >
               ✕
             </button>
-            <Image src={activeProduct.image} alt={activeProduct.title} width={288} height={288} className="w-full h-72 object-contain mb-4" />
+            <img src={activeProduct.image} alt={activeProduct.title} className="w-full h-72 object-contain mb-4" />
             <h3 className="text-xl font-semibold mb-2">{activeProduct.title}</h3>
             <p className="text-gray-700 mb-3">{activeProduct.description}</p>
             <div className="flex justify-between items-center">
