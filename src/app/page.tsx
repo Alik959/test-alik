@@ -2,12 +2,21 @@
 
 import { useState, useEffect } from "react"
 import { products } from "../components/products"
+
+interface Product {
+  id: number;
+  category: string;
+  image: string;
+  title: string;
+  description: string;
+  price: number;
+}
 import { loadFavorites, saveFavorites } from "./storage/localStorage"
 
 export default function ProductsPage() {
   const [favorites, setFavorites] = useState<number[]>([])
   const [expandedDesc, setExpandedDesc] = useState<number | null>(null)
-  const [activeProduct, setActiveProduct] = useState<any | null>(null)
+  const [activeProduct, setActiveProduct] = useState<Product | null>(null)
 
   useEffect(() => {
     setFavorites(loadFavorites())
@@ -32,7 +41,7 @@ export default function ProductsPage() {
 
   const favoriteItems = products.filter(p => favorites.includes(p.id))
 
-  const ProductCard = ({ product }: { product: any }) => {
+  const ProductCard = ({ product }: { product: Product }) => {
     const isFav = favorites.includes(product.id)
     const isExpanded = expandedDesc === product.id
 
