@@ -1,103 +1,120 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+import { useState, useEffect } from "react"
+import { products } from "../components/products"
+import { loadFavorites, saveFavorites } from "./storage/localStorage"
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+export default function ProductsPage() {
+  const [favorites, setFavorites] = useState<number[]>([])
+  const [expandedDesc, setExpandedDesc] = useState<number | null>(null)
+  const [activeProduct, setActiveProduct] = useState<any | null>(null)
+
+  useEffect(() => {
+    setFavorites(loadFavorites())
+  }, [])
+
+  const toggleFavorite = (id: number) => {
+    let updated
+    if (favorites.includes(id)) {
+      updated = favorites.filter(fav => fav !== id)
+    } else {
+      updated = [...favorites, id]
+    }
+    setFavorites(updated)
+    saveFavorites(updated)
+  }
+
+  const productsGrouped = products.reduce<Record<string, typeof products>>((group, item) => {
+    if (!group[item.category]) group[item.category] = []
+    group[item.category].push(item)
+    return group
+  }, {})
+
+  const favoriteItems = products.filter(p => favorites.includes(p.id))
+
+  const ProductCard = ({ product }: { product: any }) => {
+    const isFav = favorites.includes(product.id)
+    const isExpanded = expandedDesc === product.id
+
+    return (
+      <div
+        className="bg-white rounded-xl shadow-md hover:shadow-lg p-4 flex flex-col cursor-pointer transition-all"
+        onClick={() => setActiveProduct(product)}
+      >
+        <img src={product.image} alt={product.title} className="h-44 object-contain mb-3 w-full" />
+        <h3 className="font-medium text-lg mb-1 line-clamp-2">{product.title}</h3>
+        <p className="text-sm text-gray-600 mb-1">
+          {isExpanded ? product.description : product.description.slice(0, 80) + (product.description.length > 80 ? "..." : "")}
+        </p>
+        {product.description.length > 80 && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setExpandedDesc(isExpanded ? null : product.id) }}
+            className="text-blue-500 text-xs hover:underline mb-2"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            {isExpanded ? "Show less" : "Read more"}
+          </button>
+        )}
+        <div className="flex justify-between items-center mt-auto">
+          <span className="font-semibold">${product.price}</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleFavorite(product.id) }}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition ${
+              isFav ? "bg-red-500 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            }`}
           >
-            Read our docs
-          </a>
+            {isFav ? "❤️" : "♡"}
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-5 md:p-8 space-y-10">
+      {favoriteItems.length > 0 && (
+        <section>
+          <h2 className="text-xl md:text-2xl font-bold mb-5">Favorites</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {favoriteItems.map(p => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
+      )}
+
+      {Object.entries(productsGrouped).map(([category, items]) => (
+        <section key={category}>
+          <h2 className="text-xl md:text-2xl font-bold mb-5 capitalize">{category}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {items.map(p => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
+      ))}
+
+      {activeProduct && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-4">
+          <div className="bg-white rounded-2xl p-5 max-w-xl w-full relative shadow-2xl">
+            <button
+              onClick={() => setActiveProduct(null)}
+              className="absolute top-3 right-3 text-gray-600 hover:text-black text-lg"
+            >
+              ✕
+            </button>
+            <img src={activeProduct.image} alt={activeProduct.title} className="w-full h-72 object-contain mb-4" />
+            <h3 className="text-xl font-semibold mb-2">{activeProduct.title}</h3>
+            <p className="text-gray-700 mb-3">{activeProduct.description}</p>
+            <div className="flex justify-between items-center">
+              <span className="font-bold text-lg">${activeProduct.price}</span>
+              <button
+                onClick={() => toggleFavorite(activeProduct.id)}
+                className={`px-4 py-1 rounded-full text-sm font-medium transition ${
+                  favorites.includes(activeProduct.id) ? "bg-red-500 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                }`}
+              >
+                {favorites.includes(activeProduct.id) ? "❤️" : "♡"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  );
+  )
 }
